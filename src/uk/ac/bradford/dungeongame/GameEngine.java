@@ -21,17 +21,23 @@ public class GameEngine {
     
     int[][] tileMap;
     public void generateMap(int row, int col){
+        
         tileMap = new int[row][col];
         Random r = new Random();
         int randInt = 0;
         for (int i = 0; i<tileMap.length; i++){
             for (int j=0; j<tileMap[i].length; j++){
                 randInt = r.nextInt(3);
-                tileMap[j][i] += randInt;
-                System.out.print(tileMap[j][i]);
+                if(randInt>WALL_CHANCE){
+                    tileMap[i][j] = 0;
+                    //mySpawns.add(new Point(i,j));
+                }
+                tileMap[i][j] += randInt;
+                System.out.print(tileMap[i][j]);
             }
             System.out.println();
         }
+        
     }
 
     int[][] map = {
@@ -129,6 +135,7 @@ public class GameEngine {
      * to spawn the player and monsters.
      */
     private ArrayList<Point> spawns;
+    private ArrayList<Point> mySpawns;
 
     /**
      * An Entity object that is the current player. This object stores the state
@@ -198,25 +205,32 @@ public class GameEngine {
     
     private TileType[][] generateLevel(int[][] newMap){
         TileType[][] tiles = new TileType[DUNGEON_WIDTH][DUNGEON_HEIGHT];
+        mySpawns = new ArrayList<>();
         for(int row = 0; row < tiles.length; row++){
             for (int col = 0; col<tiles[row].length; col++){
                 switch(newMap[col][row]){
                     case 0:
                         tiles[row][col] = TileType.FLOOR;
+                        mySpawns.add(new Point(row,col));
                         break;
                     case 1:
                         tiles[row][col] = TileType.WALL;
                         break;
-                    case 2:
-                        tiles[row][col] = TileType.CHEST;
-                        break;
                     default:
-                        tiles[row][col]=TileType.STAIRS;
+                        tiles[row][col]=TileType.FLOOR;
                         break;
                 }
             }
         }
         return tiles;
+    }
+    
+    public void setTile(int xCoord, int yCoord, int type){
+        tileMap[xCoord][yCoord] = type;
+    }
+    
+    public int getTile(int xCoord, int yCoord){
+        return tileMap[xCoord][yCoord];
     }
     
     /**
@@ -232,8 +246,11 @@ public class GameEngine {
      * spawned in
      */
     private ArrayList<Point> getSpawns() {
+        mySpawns.remove(playerPosition);
         ArrayList<Point> s = new ArrayList<Point>();
-        s.add(playerPosition);
+        for(int x = 0; x<mySpawns.size(); x++){
+            s.add(mySpawns.get(x));
+        }
         //Add code here to find tiles in the level array that are suitable spawn points
         //Add these points to the ArrayList s
         return s;   
@@ -251,16 +268,14 @@ public class GameEngine {
      * level of the dungeon
      */
     private Entity[] spawnMonsters() {
-        Entity[] monsters = new Entity[4];
-        monsterOnePosition = new Point(5,4); 
-        monsters[0] = new Entity(100, monsterOnePosition.x, monsterOnePosition.y, Entity.EntityType.MONSTER);
-        monsterTwoPosition = new Point(5,4); 
-        monsters[1] = new Entity(100, monsterTwoPosition.x, monsterTwoPosition.y, Entity.EntityType.MONSTER);
-        monsterThreePosition = new Point(12,3); 
-        monsters[2] = new Entity(100, monsterThreePosition.x, monsterThreePosition.y, Entity.EntityType.MONSTER);
-        monsterFourPosition = new Point(5,4); 
-        monsters[3] = new Entity(100, monsterFourPosition.x, monsterFourPosition.y, Entity.EntityType.MONSTER);
-        return null;    //Should be changed to return an array of monsters instead of null
+        Entity[] monsters = new Entity[1];
+        for (int y=0; y<monsters.length; y++){
+            monsters[y] = new Entity(100, getSpawns().get(y).x, getSpawns().get(y).y,Entity.EntityType.MONSTER);
+        }
+        
+        //remove monsters positions from spawns
+        
+        return monsters;    //Should be changed to return an array of monsters instead of null
     }
 
     /**
@@ -272,8 +287,8 @@ public class GameEngine {
      */
     private Entity spawnPlayer() {
         //return null;    //Should be changed to return an Entity (the player) instead of null
-        playerPosition = new Point(3,1);
-        return new Entity(12, playerPosition.x, playerPosition.y, Entity.EntityType.PLAYER);
+        playerPosition = mySpawns.get(new Random().nextInt(mySpawns.size()-1));
+        return new Entity(100, playerPosition.x, playerPosition.y, Entity.EntityType.PLAYER);
     }
 
     /**
@@ -430,7 +445,7 @@ public class GameEngine {
      */
     public void startGame() {
         //tiles = generateLevel();
-        generateMap(DUNGEON_WIDTH,DUNGEON_HEIGHT);
+        generateMap(DUNGEON_HEIGHT,DUNGEON_WIDTH);
         tiles = generateLevel(tileMap);
         spawns = getSpawns();
         monsters = spawnMonsters();
