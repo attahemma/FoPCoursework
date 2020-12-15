@@ -54,6 +54,9 @@ public class DungeonInputHandler implements KeyListener {
      * @param e 
      */
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+        //engine.velX = 0;
+        //engine.velY = 0;
+    }
     
 }
