@@ -18,6 +18,8 @@ public class GameEngine {
     public Point monsterThreePosition;
     public Point monsterFourPosition;
     
+    int velY = 0, velX = 0;
+    
     
     int[][] tileMap;
     public void generateMap(int row, int col){
@@ -32,7 +34,7 @@ public class GameEngine {
                     tileMap[i][j] = 0;
                     //mySpawns.add(new Point(i,j));
                 }
-                tileMap[i][j] += randInt;
+                tileMap[i][j] = randInt;
                 System.out.print(tileMap[i][j]);
             }
             System.out.println();
@@ -302,6 +304,18 @@ public class GameEngine {
      * as damaging a monster in the tile to the left, or breaking a wall etc.
      */
     public void movePlayerLeft() {
+        velX = -1;
+        int tileType=0;
+        int moveLeft = velX + (player.getX());
+        int y = player.getY();
+        if(moveLeft == 0){}else{
+            tileType = getTile(moveLeft,y);
+            System.out.println(tileType);
+            if(tileType ==0 || tileType ==2){
+                player.setPosition(moveLeft, y);
+            }
+        }
+ 
         
     }
 
@@ -316,7 +330,17 @@ public class GameEngine {
      * as damaging a monster in the tile to the right, or breaking a wall etc.
      */
     public void movePlayerRight() {
-        
+        velX = 1;
+        int tileType=0;
+        int moveRight = velX + (player.getX());
+        int y = player.getY();
+        if(moveRight > 25){}else{
+            tileType = getTile(moveRight,y);
+            System.out.println(tileType);
+            if(tileType ==0 || tileType ==2){
+                player.setPosition(moveRight, y);
+            }
+        }
     }
 
     /**
@@ -330,7 +354,17 @@ public class GameEngine {
      * as damaging a monster in the tile above the player, or breaking a wall etc.
      */
     public void movePlayerUp() {
-        
+        velY = -1;
+        int tileType=0;
+        int moveUp = velY + (player.getY());
+        int x = player.getX();
+        if(moveUp < 0){}else{
+            tileType = getTile(x,moveUp);
+            System.out.println(tileType);
+            if(tileType ==0 || tileType ==2){
+                player.setPosition(x, moveUp);
+            }
+        }
     }
 
     /**
@@ -344,7 +378,17 @@ public class GameEngine {
      * as damaging a monster in the tile below the player, or breaking a wall etc.
      */
     public void movePlayerDown() {
-        
+        velY = 1;
+        int tileType=0;
+        int moveUp = velY + (player.getY());
+        int x = player.getX();
+        if(moveUp > 18){}else{
+            tileType = getTile(x,moveUp);
+            System.out.println(tileType);
+            if(tileType ==0 || tileType ==2){
+                player.setPosition(x, moveUp);
+            }
+        }
     }
 
     /**
