@@ -13,10 +13,7 @@ import java.util.Random;
 public class GameEngine {
     
     public Point playerPosition;
-    public Point monsterOnePosition;
-    public Point monsterTwoPosition;
-    public Point monsterThreePosition;
-    public Point monsterFourPosition;
+    private ArrayList<Point> monsterPositions;
     
     int velY = 0, velX = 0;
     
@@ -220,6 +217,7 @@ public class GameEngine {
                         break;
                     default:
                         tiles[row][col]=TileType.FLOOR;
+                        mySpawns.add(new Point(row,col));
                         break;
                 }
             }
@@ -232,7 +230,7 @@ public class GameEngine {
     }
     
     public int getTile(int xCoord, int yCoord){
-        return tileMap[xCoord][yCoord];
+        return tileMap[yCoord][xCoord];
     }
     
     /**
@@ -270,9 +268,16 @@ public class GameEngine {
      * level of the dungeon
      */
     private Entity[] spawnMonsters() {
-        Entity[] monsters = new Entity[1];
+        monsterPositions = new ArrayList<>();
+        Entity[] monsters = new Entity[4];
+        Random r = new Random();
+        int randMonsterX = 0;
+        int randMonsterY = 0;
         for (int y=0; y<monsters.length; y++){
-            monsters[y] = new Entity(100, getSpawns().get(y).x, getSpawns().get(y).y,Entity.EntityType.MONSTER);
+            randMonsterX = r.nextInt(getSpawns().size()-y);
+            randMonsterY = r.nextInt(getSpawns().size());
+            monsters[y] = new Entity(100, getSpawns().get(randMonsterX).x, getSpawns().get(randMonsterY).y,Entity.EntityType.MONSTER);
+            monsterPositions.add(new Point(monsters[y].getX(),monsters[y].getY()));
         }
         
         //remove monsters positions from spawns
@@ -308,11 +313,17 @@ public class GameEngine {
         int tileType=0;
         int moveLeft = velX + (player.getX());
         int y = player.getY();
-        if(moveLeft == 0){}else{
-            tileType = getTile(moveLeft,y);
-            System.out.println(tileType);
-            if(tileType ==0 || tileType ==2){
-                player.setPosition(moveLeft, y);
+        if(moveLeft == -1){
+        }else{
+            try{
+                tileType = getTile(moveLeft,y);
+                System.out.println(tileType);
+                if(tileType ==0 || tileType ==2){ 
+                    if(! monsterPositions.contains(new Point(moveLeft,y))){
+                        player.setPosition(moveLeft, y);}else{System.out.println("encountered monster");} 
+                }
+            }catch(ArrayIndexOutOfBoundsException e){
+                System.out.println("moved off the edge");
             }
         }
  
@@ -334,11 +345,16 @@ public class GameEngine {
         int tileType=0;
         int moveRight = velX + (player.getX());
         int y = player.getY();
-        if(moveRight > 25){}else{
-            tileType = getTile(moveRight,y);
-            System.out.println(tileType);
-            if(tileType ==0 || tileType ==2){
-                player.setPosition(moveRight, y);
+        if(moveRight > 24){}else{
+            try{
+                tileType = getTile(moveRight,y);
+                System.out.println(tileType);
+                if(tileType ==0 || tileType ==2){
+                    if(! monsterPositions.contains(new Point(moveRight,y))){
+                    player.setPosition(moveRight, y);}else{System.out.println("encountered monster");}                
+                }
+            }catch(ArrayIndexOutOfBoundsException e){
+                System.out.println("moved off the edge");
             }
         }
     }
@@ -359,10 +375,15 @@ public class GameEngine {
         int moveUp = velY + (player.getY());
         int x = player.getX();
         if(moveUp < 0){}else{
-            tileType = getTile(x,moveUp);
-            System.out.println(tileType);
-            if(tileType ==0 || tileType ==2){
-                player.setPosition(x, moveUp);
+            try{
+                tileType = getTile(x,moveUp);
+                System.out.println(tileType);
+                if(tileType ==0 || tileType ==2){
+                    if(! monsterPositions.contains(new Point(x,moveUp))){
+                    player.setPosition(x, moveUp);}else{System.out.println("encountered monster");} 
+                }
+            }catch(ArrayIndexOutOfBoundsException e){
+               System.out.println("moved off the edge");
             }
         }
     }
@@ -380,13 +401,19 @@ public class GameEngine {
     public void movePlayerDown() {
         velY = 1;
         int tileType=0;
-        int moveUp = velY + (player.getY());
+        int moveDown = velY + (player.getY());
         int x = player.getX();
-        if(moveUp > 18){}else{
-            tileType = getTile(x,moveUp);
-            System.out.println(tileType);
-            if(tileType ==0 || tileType ==2){
-                player.setPosition(x, moveUp);
+        if(moveDown > 18){}
+        else{
+            try{
+                tileType = getTile(x,moveDown);
+                System.out.println(tileType);
+                if(tileType ==0 || tileType ==2){
+                    if(! monsterPositions.contains(new Point(x,moveDown))){
+                    player.setPosition(x, moveDown);}else{System.out.println("encountered monster");}
+                }
+            }catch(ArrayIndexOutOfBoundsException e){
+                System.out.println("moved off the edge");
             }
         }
     }
