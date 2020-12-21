@@ -3,6 +3,9 @@ package uk.ac.bradford.dungeongame;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  * The GameEngine class is responsible for managing information about the game,
@@ -13,6 +16,7 @@ import java.util.Random;
 public class GameEngine {
     
     public Point playerPosition;
+    ArrayList<Entity> levelMonsters;
     private ArrayList<Point> monsterPositions;
     
     int velY = 0, velX = 0;
@@ -269,14 +273,18 @@ public class GameEngine {
      */
     private Entity[] spawnMonsters() {
         monsterPositions = new ArrayList<>();
-        Entity[] monsters = new Entity[4];
+        levelMonsters = new ArrayList<>();
+        levelMonsters.clear();
+        Entity[] monsters = new Entity[depth];
         Random r = new Random();
         int randMonsterX = 0;
         int randMonsterY = 0;
         for (int y=0; y<monsters.length; y++){
             randMonsterX = r.nextInt(getSpawns().size()-y);
             randMonsterY = r.nextInt(getSpawns().size());
-            monsters[y] = new Entity(100, getSpawns().get(randMonsterX).x, getSpawns().get(randMonsterY).y,Entity.EntityType.MONSTER);
+            Entity monster = new Entity(100, getSpawns().get(randMonsterX).x, getSpawns().get(randMonsterY).y,Entity.EntityType.MONSTER);
+            monsters[y] = monster;
+            levelMonsters.add(monster);
             monsterPositions.add(new Point(monsters[y].getX(),monsters[y].getY()));
         }
         
@@ -410,7 +418,18 @@ public class GameEngine {
                 System.out.println(tileType);
                 if(tileType ==0 || tileType ==2){
                     if(! monsterPositions.contains(new Point(x,moveDown))){
-                    player.setPosition(x, moveDown);}else{System.out.println("encountered monster");}
+                        player.setPosition(x, moveDown);
+                    }else{
+                        System.out.println("encountered monster");
+                        monsterPositions.remove(new Point(x,moveDown));
+                        Entity monster=null;
+                        for(int i = 0; i<levelMonsters.size(); i++){
+                            if(levelMonsters.get(i).getX() == x && levelMonsters.get(i).getY() == moveDown){
+                                monster = levelMonsters.get(i);
+                            }
+                        }
+                        hitMonster(monster);
+                    }
                 }
             }catch(ArrayIndexOutOfBoundsException e){
                 System.out.println("moved off the edge");
@@ -424,7 +443,7 @@ public class GameEngine {
      * @param m The Entity which is the monster that the player is attacking
      */
     private void hitMonster(Entity m) {
-        
+        m.changeHealth(0);
     }
 
     /**
@@ -433,6 +452,15 @@ public class GameEngine {
      */
     private void moveMonsters() {
         
+        int randomMonster = new Random().nextInt(monsters.length);
+            if(monsters[randomMonster] != null){
+                try{
+                    moveMonster(monsters[randomMonster]);
+                }catch(ArrayIndexOutOfBoundsException e){
+                    System.err.println("Monster "+ monsters[randomMonster].toString() +"moved out of the board");
+                }
+            }
+        
     }
 
     /**
@@ -440,9 +468,42 @@ public class GameEngine {
      * attributes of the monster Entity to reflect its new position.
      * @param m The Entity (monster) that needs to be moved
      */
-    private void moveMonster(Entity m) {
-        
+    private void moveMonster(Entity m) throws ArrayIndexOutOfBoundsException {
+        Random r = new Random();
+        //updatedAt = System.currentTimeMillis();
+        Point formerMonsterLocation = new Point(m.getX(),m.getY());
+        monsterPositions.remove(formerMonsterLocation);
+        int monVelX = 1;
+        int nextX = 0;
+        if(m.getX()>14){
+            nextX = monVelX + m.getX();
+        }else{
+            nextX = -1 + m.getX();
+        }
+        boolean hitWall = false;
+            
+        if(!hitWall){
+            //Thread.sleep(2000);
+            if(playerPosition.x == nextX){
+                hitPlayer();
+                System.out.println("can no longer move. player encountered");
+            }else if(getTile(nextX, m.getY())== 1){
+                hitWall = true;
+                System.out.println("can no longer move. wall encountered");
+            }
+            else{
+                m.setPosition(nextX, m.getY());
+                Point newMonsterLocation = new Point(nextX,m.getY());
+                monsterPositions.add(newMonsterLocation);
+                System.out.println(nextX + "," + m.getY());
+            }
+        }
+        else{
+            System.out.println("can no longer move. wall or player encountered");
+        }
+            
     }
+    //public long updatedAt;
 
     /**
      * Reduces the health of the player when hit by a monster - a monster next
@@ -450,7 +511,8 @@ public class GameEngine {
      * to reduce the player's health
      */
     private void hitPlayer() {
-        
+        player.changeHealth(0);
+        JOptionPane.showMessageDialog(null, "Game Over", "Status", JOptionPane.CLOSED_OPTION);
     }
 
     /**
@@ -460,7 +522,11 @@ public class GameEngine {
      * monsters array are skipped.
      */
     private void cleanDeadMonsters() {
-        
+        for(int i=0;i<monsters.length;i++){
+            if(monsters[i] == null){
+                monsterPositions.remove(new Point(monsters[i].getX(),monsters[i].getY()));
+            }
+        }
     }
 
     /**
@@ -472,7 +538,8 @@ public class GameEngine {
      * should not be created here unless the health of the player should be reset.
      */
     private void descendLevel() {
-        
+        depth +=1;
+        startGame();
     }
 
     /**
