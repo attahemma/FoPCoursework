@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -80,7 +81,7 @@ public class GameGUI extends JFrame {
      * case no monsters will be drawn. Elements in the monsters array can also be null,
      * in which case nothing will be drawn.
      */
-    public void updateDisplay(TileType[][] tiles, Entity player, Entity[] monsters) {
+    public void updateDisplay(TileType[][] tiles, Entity player, ArrayList<Entity> monsters) {
         canvas.update(tiles, player, monsters);
     }
     
@@ -101,7 +102,7 @@ class Canvas extends JPanel {
     
     TileType[][] currentTiles;  //the current 2D array of tiles to display
     Entity currentPlayer;       //the current player object to be drawn
-    Entity[] currentMonsters;   //the current array of monsters to draw
+    ArrayList<Entity> currentMonsters;   //the current array of monsters to draw
     
     /**
      * Constructor that loads tile images for use in this class
@@ -142,7 +143,7 @@ class Canvas extends JPanel {
      * @param player The current player object, used to draw the player and its health
      * @param mon The array of monsters to display them and their health
      */
-    public void update(TileType[][] t, Entity player, Entity[] mon) {
+    public void update(TileType[][] t, Entity player, ArrayList<Entity> mon) {
         currentTiles = t;
         currentPlayer = player;
         currentMonsters = mon;
